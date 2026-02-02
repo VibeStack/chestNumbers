@@ -190,73 +190,97 @@ function App() {
   }, [activeStart, activeEnd, page]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-100 pb-20">
-      <div className="max-w-4xl mx-auto p-8 no-print animate-in fade-in slide-in-from-top-4 duration-700">
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-slate-200/60 border border-slate-100">
-          <div className="flex flex-col items-center justify-center gap-4 mb-12 text-center">
-            <span className="text-5xl">🏃</span>
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-              Jersey Number Generator
-            </h1>
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-100 pb-20">
+      <div className="max-w-4xl mx-auto p-4 md:p-8 no-print animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="bg-white rounded-4xl p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100">
+          <div className="flex flex-col items-center justify-center gap-6 mb-16 text-center">
+            <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-4xl shadow-sm animate-bounce-subtle">
+              🏃
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+                Jersey Number{" "}
+                <span className="text-indigo-600 italic">Generator</span>
+              </h1>
+              <p className="text-slate-400 font-medium tracking-wide">
+                Professional Grade Jersey Layouts
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <div className="group space-y-3">
-              <label className="block text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 mb-12">
+            <div className="group space-y-4">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
                 Start Number
               </label>
-              <input
-                type="number"
-                min="1"
-                value={startInput}
-                onChange={(e) =>
-                  setStartInput(Math.max(1, parseInt(e.target.value) || 1))
-                }
-                className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-6 py-4 text-xl font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all duration-300"
-              />
+              <div className="relative group/input">
+                <input
+                  type="number"
+                  min="1"
+                  value={startInput}
+                  onChange={(e) =>
+                    setStartInput(Math.max(1, parseInt(e.target.value) || 1))
+                  }
+                  className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-[1.25rem] px-8 py-5 text-2xl font-black text-slate-900 text-center focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300"
+                />
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/input:opacity-100 transition-opacity">
+                  <span className="text-indigo-500">✨</span>
+                </div>
+              </div>
             </div>
 
-            <div className="group space-y-3">
-              <label className="block text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">
+            <div className="group space-y-4">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
                 End Number
               </label>
-              <input
-                type="number"
-                min="1"
-                value={endInput}
-                onChange={(e) =>
-                  setEndInput(Math.max(1, parseInt(e.target.value) || 1))
-                }
-                className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-6 py-4 text-xl font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all duration-300"
-              />
+              <div className="relative group/input">
+                <input
+                  type="number"
+                  min="1"
+                  value={endInput}
+                  onChange={(e) =>
+                    setEndInput(Math.max(1, parseInt(e.target.value) || 1))
+                  }
+                  className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-[1.25rem] px-8 py-5 text-2xl font-black text-slate-900 text-center focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300"
+                />
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/input:opacity-100 transition-opacity">
+                  <span className="text-indigo-500">✨</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="px-8 py-4 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl shadow-lg transition-all duration-300 flex-1 md:flex-none uppercase tracking-widest text-sm"
+              className="w-full sm:flex-1 px-8 py-5 bg-slate-900 hover:bg-black text-white font-black rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest text-xs flex items-center justify-center gap-3"
             >
-              {showPreview ? "Hide Preview" : "Show Preview"}
+              <span>{showPreview ? "Hide Preview" : "Show Preview"}</span>
+              <span className="text-lg">{showPreview ? "👁️‍🗨️" : "👁️"}</span>
             </button>
 
             <button
               onClick={generatePdf}
               disabled={isGeneratingPdf}
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-lg transition-all duration-300 flex-1 md:flex-none uppercase tracking-widest text-sm disabled:opacity-50 relative overflow-hidden"
+              className="w-full sm:flex-1 px-8 py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest text-xs disabled:opacity-50 relative overflow-hidden group"
             >
-              <span className="relative z-10">
+              <span className="relative z-10 flex items-center justify-center gap-3">
                 {isGeneratingPdf ? (
                   isProcessing ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-3 border-white border-t-transparent rounded-full animate-spin" />
                       Processing {generationProgress}%
                     </span>
                   ) : (
                     `Downloading ${downloadProgress}%`
                   )
                 ) : (
-                  "Download PDF (Print All)"
+                  <>
+                    <span>Download (Print All)</span>
+                    <span className="text-lg group-hover:translate-y-0.5 transition-transform">
+                      📄
+                    </span>
+                  </>
                 )}
               </span>
 
@@ -272,9 +296,10 @@ function App() {
 
             <button
               onClick={() => setShowUrlModal(true)}
-              className="px-8 py-4 bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-900 font-bold rounded-2xl transition-all duration-300 flex-1 md:flex-none"
+              className="w-full sm:w-auto px-10 py-5 bg-white hover:bg-slate-50 border-2 border-slate-100 text-slate-900 font-black rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2"
             >
-              🔗 URL QR
+              <span>🔗</span>
+              <span className="uppercase tracking-widest text-xs">URL QR</span>
             </button>
           </div>
 
@@ -286,43 +311,53 @@ function App() {
 
       {showPreview && (
         <>
-          <div className="max-w-4xl mx-auto px-8 no-print flex items-center justify-between mb-8">
-            <button
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
-              className="px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all cursor-pointer"
-            >
-              &lsaquo; Prev
-            </button>
+          <div className="max-w-4xl mx-auto px-4 md:px-8 no-print mb-12">
+            <div className="bg-white rounded-3xl p-4 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-100 flex items-center justify-between">
+              <button
+                disabled={page === 0}
+                onClick={() => setPage(page - 1)}
+                className="flex items-center gap-2 px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl font-black text-xs text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all cursor-pointer uppercase tracking-widest"
+              >
+                <span>&lsaquo;</span>
+                <span className="hidden sm:inline">Prev</span>
+              </button>
 
-            <div className="flex flex-col items-center">
-              <span className="font-bold text-slate-400 text-sm italic">
-                Preview Page <span className="text-slate-900">{page + 1}</span>{" "}
-                of {totalPages}
-              </span>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+                  Page Layout Preview
+                </span>
+                <div className="font-black text-sm text-slate-900">
+                  <span className="text-indigo-600">{page + 1}</span>
+                  <span className="mx-2 text-slate-200">/</span>
+                  <span className="text-slate-400">{totalPages}</span>
+                </div>
+              </div>
+
+              <button
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage(page + 1)}
+                className="flex items-center gap-2 px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl font-black text-xs text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all cursor-pointer uppercase tracking-widest"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <span>&rsaquo;</span>
+              </button>
             </div>
-
-            <button
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage(page + 1)}
-              className="px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-600 disabled:opacity-30 hover:bg-slate-50 transition-all cursor-pointer"
-            >
-              Next &rsaquo;
-            </button>
           </div>
 
-          <div className="preview-area w-full max-w-[210mm] mx-auto pb-20 no-print">
-            {visibleNumbers.map((number) => (
-              <div
-                key={number}
-                className="bg-white text-black p-[5mm] w-[210mm] h-[297mm] mx-auto mb-8 shadow-2xl flex flex-col justify-around overflow-hidden border border-slate-100"
-                style={{ contain: "layout size style" }}
-              >
-                <JerseyCard number={number} />
-                <div className="w-full border-b-2 border-slate-100 border-dashed my-4" />
-                <JerseyCard number={number} />
-              </div>
-            ))}
+          <div className="preview-area w-full max-w-[210mm] mx-auto pb-20 no-print overflow-x-hidden md:overflow-visible">
+            <div className="flex flex-col items-center gap-8 md:gap-12 p-4 md:p-0 origin-top transform scale-[0.45] sm:scale-[0.7] md:scale-100 mb-[-120%] sm:mb-[-40%] md:mb-0">
+              {visibleNumbers.map((number) => (
+                <div
+                  key={number}
+                  className="bg-white text-black p-[5mm] w-[210mm] h-[297mm] shadow-[0_40px_100px_rgba(0,0,0,0.1)] flex flex-col justify-around overflow-hidden border border-slate-100 rounded-sm"
+                  style={{ contain: "layout size style" }}
+                >
+                  <JerseyCard number={number} />
+                  <div className="w-full border-b-4 border-slate-100 border-dashed my-8" />
+                  <JerseyCard number={number} />
+                </div>
+              ))}
+            </div>
           </div>
         </>
       )}
@@ -334,11 +369,11 @@ function App() {
           onClick={() => setShowUrlModal(false)}
         >
           <div
-            className="w-full max-w-lg bg-white rounded-[40px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] relative animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 border border-white/20"
+            className="w-full max-w-lg bg-white rounded-[2.5rem] p-6 md:p-10 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.15)] relative animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 border border-slate-100"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="absolute top-8 right-8 w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all text-2xl group"
+              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all text-2xl group"
               onClick={() => setShowUrlModal(false)}
             >
               <span className="group-hover:rotate-90 transition-transform duration-300">
@@ -346,81 +381,78 @@ function App() {
               </span>
             </button>
 
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-3xl">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl">
                 🔗
               </div>
               <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                   Website QR
                 </h2>
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
-                  Generate Instant Link QR
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
+                  Instant Link Generator
                 </p>
               </div>
             </div>
 
-            <div className="space-y-10">
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <label className="text-sm font-bold text-slate-500 uppercase tracking-widest ml-1">
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <div className="flex justify-between items-end px-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     Target URL
                   </label>
                   {customUrl && (
                     <button
                       onClick={() => setCustomUrl("")}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-widest"
+                      className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-[0.2em]"
                     >
                       Clear
                     </button>
                   )}
                 </div>
-                <div className="relative group">
+                <div className="relative group/modal-input">
                   <input
                     type="text"
                     placeholder="https://athletix.gndec.ac.in"
                     value={customUrl}
                     onChange={(e) => setCustomUrl(e.target.value)}
                     autoFocus
-                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl px-8 py-5 text-lg font-medium text-slate-900 focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300 shadow-sm"
+                    className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-3xl px-6 py-4 text-slate-900 focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300"
                   />
-                  {!customUrl && (
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-20">
-                      <span className="text-2xl">⌨️</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              <div className="relative p-10 bg-slate-50/50 rounded-[40px] border-2 border-slate-100 border-dashed group transition-all duration-500 hover:bg-slate-50 hover:border-indigo-100">
+              <div className="relative p-8 md:p-10 bg-slate-50/50 rounded-[2.5rem] border-2 border-slate-100 border-dashed group transition-all duration-500 hover:bg-slate-50 hover:border-indigo-100">
                 {customQr ? (
-                  <div className="flex flex-col items-center gap-8 animate-in zoom-in-90 duration-500">
+                  <div className="flex flex-col items-center gap-6 animate-in zoom-in-90 duration-500">
                     <div className="relative">
                       <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-full" />
                       <img
                         src={customQr}
                         alt="Custom QR"
-                        className="relative z-10 w-[240px] h-[240px] rounded-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] border-8 border-white grayscale transition-all duration-500 hover:grayscale-0 hover:scale-105"
+                        className="relative z-10 w-48 h-48 md:w-56 md:h-56 rounded-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] border-8 border-white grayscale transition-all duration-500 hover:grayscale-0 hover:scale-105"
                       />
                     </div>
 
                     <a
                       href={customQr}
                       download="website-qr.png"
-                      className="w-full py-5 px-8 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-600 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 uppercase tracking-widest text-sm"
+                      className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-600 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
                     >
                       <span>Download PNG</span>
-                      <span className="text-xl">📥</span>
+                      <span className="text-lg">📥</span>
                     </a>
                   </div>
                 ) : (
-                  <div className="py-20 text-slate-400 font-bold text-center flex flex-col items-center gap-4">
-                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-sm animate-bounce duration-1000">
+                  <div className="py-12 text-slate-400 font-bold text-center flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm animate-bounce duration-1000">
                       ✨
                     </div>
                     <div>
-                      <p className="text-slate-900">Waiting for URL</p>
-                      <p className="text-sm opacity-50 font-medium normal-case mt-1 italic">
+                      <p className="text-slate-900 text-sm font-black uppercase tracking-widest">
+                        Waiting for URL
+                      </p>
+                      <p className="text-xs opacity-50 font-medium normal-case mt-1 italic">
                         The magic happens here...
                       </p>
                     </div>
@@ -429,9 +461,9 @@ function App() {
               </div>
             </div>
 
-            <div className="mt-10 pt-8 border-t border-slate-50 text-center">
-              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">
-                High Resolution • Print Ready • Zero Tracking
+            <div className="mt-8 pt-6 border-t border-slate-50 text-center">
+              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+                High Resolution • Print Ready
               </p>
             </div>
           </div>

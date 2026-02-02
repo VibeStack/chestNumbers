@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+  @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600&display=swap");
 }
 
 @media print {
@@ -9,7 +9,7 @@
     size: A4;
     margin: 0;
   }
-  
+
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -27,4 +27,25 @@
   .break-after-page {
     break-after: page;
   }
+}
+
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s infinite;
+}
+
+::selection {
+  background: #e0e7ff;
+  color: #4338ca;
 }
