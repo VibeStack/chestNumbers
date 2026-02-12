@@ -62,12 +62,7 @@ const ensureQrOnDisk = async (number) => {
     return filePath;
   }
 
-  const qrPayload = {
-    id: "GNDEC Athletix 2026",
-    jerseyNumber: number,
-  };
-
-  await QRCode.toFile(filePath, JSON.stringify(qrPayload), {
+  await QRCode.toFile(filePath, JSON.stringify(number), {
     margin: 1,
     width: 300,
     color: { dark: "#000000", light: "#ffffff" },
@@ -77,10 +72,23 @@ const ensureQrOnDisk = async (number) => {
 };
 
 app.post("/api/generate-pdf", async (req, res) => {
-  const { start, end, requestId } = req.body;
+  const { start, end, numbers: customNumbers, requestId } = req.body;
 
-  if (isNaN(start) || isNaN(end) || start > end) {
-    return res.status(400).send("Invalid start or end number");
+  // Build numbers list from either custom array or range
+  let numbers;
+  if (Array.isArray(customNumbers) && customNumbers.length > 0) {
+    numbers = customNumbers
+      .map((n) => parseInt(n, 10))
+      .filter((n) => !isNaN(n) && n > 0);
+    if (numbers.length === 0) {
+      return res.status(400).send("No valid numbers provided");
+    }
+  } else if (!isNaN(start) && !isNaN(end) && start <= end) {
+    numbers = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  } else {
+    return res
+      .status(400)
+      .send("Invalid parameters: provide start/end or numbers array");
   }
 
   const updateProgress = (val) => {
@@ -90,8 +98,7 @@ app.post("/api/generate-pdf", async (req, res) => {
   };
 
   try {
-    const totalItems = end - start + 1;
-    const numbers = Array.from({ length: totalItems }, (_, i) => start + i);
+    const totalItems = numbers.length;
 
     // 1. Parallel QR Disk Caching (Phase 1: 40% progress)
     const CONCURRENCY = 15;
@@ -107,11 +114,12 @@ app.post("/api/generate-pdf", async (req, res) => {
       margin: 0,
     });
 
+    const filename = Array.isArray(customNumbers)
+      ? `Jerseys_custom_${numbers.length}.pdf`
+      : `Jerseys_${start}_to_${end}.pdf`;
+
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=Jerseys_${start}_to_${end}.pdf`,
-    );
+    res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
     doc.pipe(res);
 
@@ -120,10 +128,11 @@ app.post("/api/generate-pdf", async (req, res) => {
     const CARD_HEIGHT = A4_HEIGHT / 2;
 
     // 3. Render Pages (Phase 2: 40% to 100% progress)
-    for (let i = start; i <= end; i++) {
-      if (i > start) doc.addPage();
+    for (let idx = 0; idx < numbers.length; idx++) {
+      const num = numbers[idx];
+      if (idx > 0) doc.addPage();
 
-      const qrPath = getQrPath(i);
+      const qrPath = getQrPath(num);
 
       const drawCard = (num, yOffset) => {
         const col65 = A4_WIDTH * 0.65;
@@ -190,10 +199,10 @@ app.post("/api/generate-pdf", async (req, res) => {
           .undash();
       };
 
-      drawCard(i, 0);
-      drawCard(i, CARD_HEIGHT);
+      drawCard(num, 0);
+      drawCard(num, CARD_HEIGHT);
 
-      updateProgress(40 + ((i - start + 1) / totalItems) * 59);
+      updateProgress(40 + ((idx + 1) / totalItems) * 59);
     }
 
     doc.end();

@@ -3,13 +3,7 @@ import axios from "axios";
 import { generateLightQr } from "./utils/generateQr";
 
 const getQrForPreview = async (number) => {
-  return generateLightQr(
-    {
-      id: "GNDEC Athletix 2026",
-      jerseyNumber: number,
-    },
-    { width: 240 },
-  );
+  return generateLightQr(number, { width: 240 });
 };
 
 // Memoized Jersey Card for browser preview
@@ -84,6 +78,36 @@ function App() {
   const [customUrl, setCustomUrl] = useState("");
   const [customQr, setCustomQr] = useState("");
 
+  // Custom jersey numbers input
+  const [customNumbersInput, setCustomNumbersInput] = useState("");
+
+  // Parse custom numbers from input string
+  const parsedCustomNumbers = useMemo(() => {
+    if (!customNumbersInput.trim()) return [];
+    return [
+      ...new Set(
+        customNumbersInput
+          .split(",")
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => !isNaN(n) && n > 0),
+      ),
+    ].sort((a, b) => a - b);
+  }, [customNumbersInput]);
+
+  const hasCustomNumbers = parsedCustomNumbers.length > 0;
+
+  // Handle custom numbers input — auto-convert space to comma
+  const handleCustomNumbersChange = (e) => {
+    const value = e.target.value.replace(/\s+/g, ",");
+    setCustomNumbersInput(value);
+    setPage(0);
+  };
+
+  const clearCustomNumbers = () => {
+    setCustomNumbersInput("");
+    setPage(0);
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setActiveStart(startInput);
@@ -93,7 +117,10 @@ function App() {
     return () => clearTimeout(timer);
   }, [startInput, endInput]);
 
-  const generatePdf = async () => {
+  const generatePdf = async (useCustom = false) => {
+    const numbersToGenerate = useCustom ? parsedCustomNumbers : null;
+    if (useCustom && parsedCustomNumbers.length === 0) return;
+
     setIsGeneratingPdf(true);
     setIsProcessing(true);
     setGenerationProgress(0);
@@ -123,30 +150,28 @@ function App() {
 
     try {
       // 2. Trigger PDF generation
-      const response = await axios.post(
-        "/api/generate-pdf",
-        {
-          start: activeStart,
-          end: activeEnd,
-          requestId: requestId,
+      const body = numbersToGenerate
+        ? { numbers: numbersToGenerate, requestId }
+        : { start: activeStart, end: activeEnd, requestId };
+
+      const response = await axios.post("/api/generate-pdf", body, {
+        responseType: "blob",
+        onDownloadProgress: (progressEvent) => {
+          if (!progressEvent.total) return;
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setDownloadProgress(percent);
         },
-        {
-          responseType: "blob",
-          onDownloadProgress: (progressEvent) => {
-            if (!progressEvent.total) return;
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            setDownloadProgress(percent);
-          },
-        },
-      );
+      });
 
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Jerseys_${activeStart}_to_${activeEnd}.pdf`;
+      link.download = numbersToGenerate
+        ? `Jerseys_custom_${numbersToGenerate.length}.pdf`
+        : `Jerseys_${activeStart}_to_${activeEnd}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
@@ -175,19 +200,21 @@ function App() {
     return () => clearTimeout(timer);
   }, [customUrl]);
 
-  const totalItems = Math.max(0, activeEnd - activeStart + 1);
+  // Use custom numbers if provided; otherwise, use range
+  const activeNumbers = useMemo(() => {
+    if (hasCustomNumbers) return parsedCustomNumbers;
+    const nums = [];
+    for (let i = activeStart; i <= activeEnd; i++) nums.push(i);
+    return nums;
+  }, [hasCustomNumbers, parsedCustomNumbers, activeStart, activeEnd]);
+
+  const totalItems = activeNumbers.length;
   const totalPages = Math.ceil(totalItems / PREVIEW_PAGE_SIZE);
 
   const visibleNumbers = useMemo(() => {
-    const numbers = [];
-    const windowStart = activeStart + page * PREVIEW_PAGE_SIZE;
-    const windowEnd = Math.min(activeEnd, windowStart + PREVIEW_PAGE_SIZE - 1);
-
-    for (let i = windowStart; i <= windowEnd; i++) {
-      numbers.push(i);
-    }
-    return numbers;
-  }, [activeStart, activeEnd, page]);
+    const start = page * PREVIEW_PAGE_SIZE;
+    return activeNumbers.slice(start, start + PREVIEW_PAGE_SIZE);
+  }, [activeNumbers, page]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-indigo-100 pb-20">
@@ -250,6 +277,57 @@ function App() {
             </div>
           </div>
 
+          {/* Custom Jersey Numbers Input */}
+          <div className="mb-12 space-y-4">
+            <div className="flex justify-between items-end px-2">
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
+                Custom Numbers
+              </label>
+              {customNumbersInput && (
+                <button
+                  onClick={clearCustomNumbers}
+                  className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-[0.2em]"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="relative group/input">
+              <input
+                type="text"
+                placeholder="e.g. 1, 5, 12, 45, 100"
+                value={customNumbersInput}
+                onChange={handleCustomNumbersChange}
+                className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-[1.25rem] px-8 py-5 text-lg font-bold text-slate-900 focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300"
+              />
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-focus-within/input:opacity-100 transition-opacity">
+                <span className="text-indigo-500">🎯</span>
+              </div>
+            </div>
+
+            {/* Parsed number tags */}
+            {parsedCustomNumbers.length > 0 && (
+              <div className="flex flex-wrap gap-2 px-2 animate-in fade-in duration-300">
+                {parsedCustomNumbers.map((num) => (
+                  <span
+                    key={num}
+                    className="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 font-black text-xs rounded-xl border border-indigo-100 tracking-wide"
+                  >
+                    #{num}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {hasCustomNumbers && (
+              <p className="text-xs text-indigo-500 font-bold px-2">
+                {parsedCustomNumbers.length} jersey
+                {parsedCustomNumbers.length !== 1 ? "s" : ""} selected — this
+                overrides the range above
+              </p>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setShowPreview(!showPreview)}
@@ -260,7 +338,7 @@ function App() {
             </button>
 
             <button
-              onClick={generatePdf}
+              onClick={() => generatePdf(hasCustomNumbers)}
               disabled={isGeneratingPdf}
               className="w-full sm:flex-1 px-8 py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest text-xs disabled:opacity-50 relative overflow-hidden group"
             >
@@ -276,7 +354,11 @@ function App() {
                   )
                 ) : (
                   <>
-                    <span>Download (Print All)</span>
+                    <span>
+                      {hasCustomNumbers
+                        ? `Download (${parsedCustomNumbers.length} Selected)`
+                        : "Download (Print All)"}
+                    </span>
                     <span className="text-lg group-hover:translate-y-0.5 transition-transform">
                       📄
                     </span>
@@ -304,7 +386,8 @@ function App() {
           </div>
 
           <div className="mt-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
-            Ready to generate {totalItems} jerseys • 2 per A4 page
+            Ready to generate {totalItems} jersey{totalItems !== 1 ? "s" : ""} •
+            2 per A4 page
           </div>
         </div>
       </div>
