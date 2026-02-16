@@ -56,6 +56,8 @@ const JerseyCard = memo(({ number }) => {
 
 JerseyCard.displayName = "JerseyCard";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 function App() {
   const PREVIEW_PAGE_SIZE = 20;
 
@@ -96,7 +98,7 @@ function App() {
 
   // Handle custom numbers input — auto-convert space to comma
   const handleCustomNumbersChange = (e) => {
-    const value = e.target.value.replace(/\s+/g, ",");
+    const value = e.target.value.replace(/[\s,]+/g, ",");
     setCustomNumbersInput(value);
     setPage(0);
   };
@@ -128,7 +130,7 @@ function App() {
 
     // 1. Establish SSE connection for generation progress
     const eventSource = new EventSource(
-      `http://localhost:8000/api/progress/${requestId}`,
+      `${API_BASE}/api/progress/${requestId}`,
     );
 
     eventSource.onmessage = (event) => {
@@ -152,7 +154,7 @@ function App() {
         ? { numbers: numbersToGenerate, requestId }
         : { start: activeStart, end: activeEnd, requestId };
 
-      const response = await axios.post("/api/generate-pdf", body, {
+      const response = await axios.post(`${API_BASE}/api/generate-pdf`, body, {
         responseType: "blob",
         onDownloadProgress: (progressEvent) => {
           if (!progressEvent.total) return;
