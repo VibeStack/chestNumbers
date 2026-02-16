@@ -19,36 +19,34 @@ const JerseyCard = memo(({ number }) => {
   }, [number]);
 
   return (
-    <div className="jersey-half border-[6px] border-black border-dotted rounded-[24px] p-10 flex flex-row items-stretch h-[135mm] relative bg-white box-border overflow-hidden">
-      <div className="w-[65%] flex flex-col items-center justify-between h-full relative z-10 border-r-2 border-slate-100/50 py-8">
-        <div className="w-full flex justify-center">
-          <div className="font-['Montserrat'] font-black text-4xl italic tracking-tighter uppercase text-black border-b-[5px] border-black pb-1 leading-none shadow-[0_4px_0_rgba(0,0,0,0.05)]">
-            GNDEC Athletix
-          </div>
+    <div className="w-full h-[135mm] bg-white flex items-center justify-between pl-[40px] pr-[30px] box-border">
+      {/* LEFT SIDE — Number + Label */}
+      <div className="flex flex-col items-start">
+        {/* Big Race Number — bold italic centered in half page */}
+        <div
+          className="font-black italic leading-[0.85] tracking-tight text-black"
+          style={{ fontSize: "clamp(140px, 22vw, 220px)" }}
+        >
+          {String(number).padStart(3, "0")}
         </div>
 
-        <div className="font-['Montserrat'] font-black leading-none tracking-tighter text-black flex items-center justify-center text-[200px] flex-1">
-          {number}
-        </div>
-
-        <div className="w-full flex justify-center">
-          <div className="text-black font-bold uppercase tracking-[0.25em] text-xl">
-            Athletic Meet 2026
-          </div>
+        {/* Event Name — bottom-right of number */}
+        <div className="text-[16px] font-semibold tracking-[0.15em] text-black/70 mt-1 self-end">
+          GNDEC ATHLETIX
         </div>
       </div>
 
-      <div className="w-[35%] flex items-center justify-center h-full pl-8">
+      {/* RIGHT SIDE — QR Code (enlarged) */}
+      <div className="flex items-center justify-center">
         {qr ? (
           <img
             src={qr}
             alt={`QR for ${number}`}
-            className="w-[260px] h-[260px] object-contain grayscale animate-in fade-in duration-500"
-            loading="lazy"
+            className="w-[180px] h-[180px] object-contain"
           />
         ) : (
-          <div className="w-[260px] h-[260px] bg-slate-50 rounded-[32px] animate-pulse flex items-center justify-center border-2 border-slate-100">
-            <div className="h-10 w-10 border-4 border-slate-200 border-t-slate-400 rounded-full animate-spin" />
+          <div className="w-[180px] h-[180px] border border-gray-300 flex items-center justify-center text-xs text-gray-400">
+            QR
           </div>
         )}
       </div>
