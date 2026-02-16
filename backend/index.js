@@ -135,68 +135,39 @@ app.post("/api/generate-pdf", async (req, res) => {
       const qrPath = getQrPath(num);
 
       const drawCard = (num, yOffset) => {
-        const col65 = A4_WIDTH * 0.65;
-        const col35 = A4_WIDTH * 0.35;
+        const leftPadding = 40;
+        const rightPadding = 30;
 
-        // Branding
+        // Jersey Number — big bold, vertically centered
+        const numStr = String(num).padStart(3, "0");
+        const numSize = numStr.length > 3 ? 120 : 180;
+        const numY = yOffset + CARD_HEIGHT / 2 - numSize / 2;
+
+        doc
+          .font("Helvetica-BoldOblique")
+          .fontSize(numSize)
+          .text(numStr, leftPadding, numY, {
+            lineBreak: false,
+          });
+
+        // "GNDEC ATHLETIX" — small text below number, right-aligned to number width
+        const numWidth = doc.widthOfString(numStr);
         doc
           .font("Helvetica-Bold")
-          .fontSize(24)
-          .text("GNDEC ATHLETIX", 0, yOffset + 60, {
-            width: col65,
-            align: "center",
-          });
-
-        // Branding Underline
-        const textWidth = doc.widthOfString("GNDEC ATHLETIX");
-        doc
-          .moveTo((col65 - textWidth) / 2, yOffset + 90)
-          .lineTo((col65 + textWidth) / 2, yOffset + 90)
-          .lineWidth(3)
-          .stroke();
-
-        // Jersey Number
-        const numStr = String(num);
-        const numSize = numStr.length > 3 ? 120 : 180;
-        doc
-          .fontSize(numSize)
-          .text(numStr, 0, yOffset + CARD_HEIGHT / 2 - numSize / 2, {
-            width: col65,
-            align: "center",
-          });
-
-        // Footer
-        doc
           .fontSize(14)
-          .text("ATHLETIC MEET 2026", 0, yOffset + CARD_HEIGHT - 60, {
-            width: col65,
-            align: "center",
+          .text("GNDEC ATHLETIX", leftPadding, numY + numSize * 0.85 + 4, {
+            width: numWidth,
+            align: "right",
+            lineBreak: false,
           });
 
-        // QR Code
+        // QR Code — centered vertically on the right side
         const qrSize = 160;
-        doc.image(
-          qrPath,
-          col65 + (col35 - qrSize) / 2,
-          yOffset + (CARD_HEIGHT - qrSize) / 2,
-          {
-            width: qrSize,
-          },
-        );
-
-        // Outer Dotted Border
-        const padding = 15;
-        doc
-          .rect(
-            padding,
-            yOffset + padding,
-            A4_WIDTH - padding * 2,
-            CARD_HEIGHT - padding * 2,
-          )
-          .dash(5, { space: 5 })
-          .lineWidth(4)
-          .stroke()
-          .undash();
+        const qrX = A4_WIDTH - rightPadding - qrSize;
+        const qrY = yOffset + (CARD_HEIGHT - qrSize) / 2;
+        doc.image(qrPath, qrX, qrY, {
+          width: qrSize,
+        });
       };
 
       drawCard(num, 0);
