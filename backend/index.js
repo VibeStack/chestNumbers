@@ -24,7 +24,13 @@ if (!fs.existsSync(CACHE_DIR)) {
 // Store progress of active requests
 const progressStore = new Map();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://chest-numbers-fa.vercel.app"],
+    methods: ["GET", "POST", "OPTIONS"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // SSE Progress Endpoint
@@ -162,7 +168,7 @@ app.post("/api/generate-pdf", async (req, res) => {
           });
 
         // QR Code — centered vertically on the right side
-        const qrSize = 160;
+        const qrSize = 150;
         const qrX = A4_WIDTH - rightPadding - qrSize;
         const qrY = yOffset + (CARD_HEIGHT - qrSize) / 2;
         doc.image(qrPath, qrX, qrY, {

@@ -42,10 +42,10 @@ const JerseyCard = memo(({ number }) => {
           <img
             src={qr}
             alt={`QR for ${number}`}
-            className="w-[180px] h-[180px] object-contain"
+            className="w-[170px] h-[170px] object-contain"
           />
         ) : (
-          <div className="w-[180px] h-[180px] border border-gray-300 flex items-center justify-center text-xs text-gray-400">
+          <div className="w-[170px] h-[170px] border border-gray-300 flex items-center justify-center text-xs text-gray-400">
             QR
           </div>
         )}
