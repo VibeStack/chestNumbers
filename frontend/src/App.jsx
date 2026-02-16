@@ -1,66 +1,13 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { generateLightQr } from "./utils/generateQr";
+import { API_BASE } from "./config/api";
+import JerseyCard from "./components/JerseyCard";
+import PreviewPagination from "./components/PreviewPagination";
+import UrlQrModal from "./components/UrlQrModal";
 
-const getQrForPreview = async (number) => {
-  return generateLightQr(number, { width: 240 });
-};
-
-// Memoized Jersey Card for browser preview
-const JerseyCard = memo(({ number }) => {
-  const [qr, setQr] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-    getQrForPreview(number).then((img) => {
-      if (mounted) setQr(img);
-    });
-    return () => (mounted = false);
-  }, [number]);
-
-  return (
-    <div className="w-full h-[135mm] bg-white flex items-center justify-between pl-[40px] pr-[30px] box-border">
-      {/* LEFT SIDE — Number + Label */}
-      <div className="flex flex-col items-start">
-        {/* Big Race Number — bold italic centered in half page */}
-        <div
-          className="font-black italic leading-[0.85] tracking-tight text-black"
-          style={{ fontSize: "clamp(140px, 22vw, 220px)" }}
-        >
-          {String(number).padStart(3, "0")}
-        </div>
-
-        {/* Event Name — bottom-right of number */}
-        <div className="text-[16px] font-semibold tracking-[0.15em] text-black/70 mt-1 self-end">
-          GNDEC ATHLETIX
-        </div>
-      </div>
-
-      {/* RIGHT SIDE — QR Code (enlarged) */}
-      <div className="flex items-center justify-center">
-        {qr ? (
-          <img
-            src={qr}
-            alt={`QR for ${number}`}
-            className="w-[170px] h-[170px] object-contain"
-          />
-        ) : (
-          <div className="w-[170px] h-[170px] border border-gray-300 flex items-center justify-center text-xs text-gray-400">
-            QR
-          </div>
-        )}
-      </div>
-    </div>
-  );
-});
-
-JerseyCard.displayName = "JerseyCard";
-
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const PREVIEW_PAGE_SIZE = 20;
 
 function App() {
-  const PREVIEW_PAGE_SIZE = 20;
-
   const [startInput, setStartInput] = useState(1);
   const [endInput, setEndInput] = useState(500);
 
@@ -75,8 +22,6 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [showUrlModal, setShowUrlModal] = useState(false);
-  const [customUrl, setCustomUrl] = useState("");
-  const [customQr, setCustomQr] = useState("");
 
   // Custom jersey numbers input
   const [customNumbersInput, setCustomNumbersInput] = useState("");
@@ -184,22 +129,6 @@ function App() {
     }
   };
 
-  const generateCustomQr = async (url) => {
-    if (!url) {
-      setCustomQr("");
-      return;
-    }
-    const qr = await generateLightQr(url, { width: 400 });
-    setCustomQr(qr);
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      generateCustomQr(customUrl);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [customUrl]);
-
   // Use custom numbers if provided; otherwise, use range
   const activeNumbers = useMemo(() => {
     if (hasCustomNumbers) return parsedCustomNumbers;
@@ -237,11 +166,16 @@ function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 mb-12">
             <div className="group space-y-4">
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
+              <label
+                htmlFor="startNumber"
+                className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2"
+              >
                 Start Number
               </label>
               <div className="relative group/input">
                 <input
+                  id="startNumber"
+                  name="startNumber"
                   type="number"
                   min="1"
                   value={startInput}
@@ -257,11 +191,16 @@ function App() {
             </div>
 
             <div className="group space-y-4">
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
+              <label
+                htmlFor="endNumber"
+                className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2"
+              >
                 End Number
               </label>
               <div className="relative group/input">
                 <input
+                  id="endNumber"
+                  name="endNumber"
                   type="number"
                   min="1"
                   value={endInput}
@@ -280,7 +219,10 @@ function App() {
           {/* Custom Jersey Numbers Input */}
           <div className="mb-12 space-y-4">
             <div className="flex justify-between items-end px-2">
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
+              <label
+                htmlFor="customNumbers"
+                className="block text-xs font-black text-slate-400 uppercase tracking-[0.2em]"
+              >
                 Custom Numbers
               </label>
               {customNumbersInput && (
@@ -294,6 +236,8 @@ function App() {
             </div>
             <div className="relative group/input">
               <input
+                id="customNumbers"
+                name="customNumbers"
                 type="text"
                 placeholder="e.g. 1, 5, 12, 45, 100"
                 value={customNumbersInput}
@@ -395,36 +339,12 @@ function App() {
       {showPreview && (
         <>
           <div className="max-w-4xl mx-auto px-4 md:px-8 no-print mb-12">
-            <div className="bg-white rounded-3xl p-4 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-100 flex items-center justify-between">
-              <button
-                disabled={page === 0}
-                onClick={() => setPage(page - 1)}
-                className="flex items-center gap-2 px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl font-black text-xs text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all cursor-pointer uppercase tracking-widest"
-              >
-                <span>&lsaquo;</span>
-                <span className="hidden sm:inline">Prev</span>
-              </button>
-
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
-                  Page Layout Preview
-                </span>
-                <div className="font-black text-sm text-slate-900">
-                  <span className="text-indigo-600">{page + 1}</span>
-                  <span className="mx-2 text-slate-200">/</span>
-                  <span className="text-slate-400">{totalPages}</span>
-                </div>
-              </div>
-
-              <button
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage(page + 1)}
-                className="flex items-center gap-2 px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl font-black text-xs text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all cursor-pointer uppercase tracking-widest"
-              >
-                <span className="hidden sm:inline">Next</span>
-                <span>&rsaquo;</span>
-              </button>
-            </div>
+            <PreviewPagination
+              page={page}
+              totalPages={totalPages}
+              onPrev={() => setPage(page - 1)}
+              onNext={() => setPage(page + 1)}
+            />
           </div>
 
           <div className="preview-area w-full max-w-[210mm] mx-auto pb-20 no-print overflow-x-hidden md:overflow-visible">
@@ -446,112 +366,7 @@ function App() {
       )}
 
       {/* URL QR Modal */}
-      {showUrlModal && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md no-print animate-in fade-in duration-300"
-          onClick={() => setShowUrlModal(false)}
-        >
-          <div
-            className="w-full max-w-lg bg-white rounded-[2.5rem] p-6 md:p-10 shadow-[0_32px_80px_-16px_rgba(0,0,0,0.15)] relative animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 border border-slate-100"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all text-2xl group"
-              onClick={() => setShowUrlModal(false)}
-            >
-              <span className="group-hover:rotate-90 transition-transform duration-300">
-                &times;
-              </span>
-            </button>
-
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl">
-                🔗
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                  Website QR
-                </h2>
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">
-                  Instant Link Generator
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <div className="flex justify-between items-end px-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                    Target URL
-                  </label>
-                  {customUrl && (
-                    <button
-                      onClick={() => setCustomUrl("")}
-                      className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-[0.2em]"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-                <div className="relative group/modal-input">
-                  <input
-                    type="text"
-                    placeholder="https://athletix.gndec.ac.in"
-                    value={customUrl}
-                    onChange={(e) => setCustomUrl(e.target.value)}
-                    autoFocus
-                    className="w-full bg-slate-50/50 border-2 border-slate-100 rounded-3xl px-6 py-4 text-slate-900 focus:ring-12 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white outline-none transition-all duration-300"
-                  />
-                </div>
-              </div>
-
-              <div className="relative p-8 md:p-10 bg-slate-50/50 rounded-[2.5rem] border-2 border-slate-100 border-dashed group transition-all duration-500 hover:bg-slate-50 hover:border-indigo-100">
-                {customQr ? (
-                  <div className="flex flex-col items-center gap-6 animate-in zoom-in-90 duration-500">
-                    <div className="relative">
-                      <div className="absolute -inset-4 bg-indigo-500/5 blur-3xl rounded-full" />
-                      <img
-                        src={customQr}
-                        alt="Custom QR"
-                        className="relative z-10 w-48 h-48 md:w-56 md:h-56 rounded-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] border-8 border-white grayscale transition-all duration-500 hover:grayscale-0 hover:scale-105"
-                      />
-                    </div>
-
-                    <a
-                      href={customQr}
-                      download="website-qr.png"
-                      className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-indigo-600 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
-                    >
-                      <span>Download PNG</span>
-                      <span className="text-lg">📥</span>
-                    </a>
-                  </div>
-                ) : (
-                  <div className="py-12 text-slate-400 font-bold text-center flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm animate-bounce duration-1000">
-                      ✨
-                    </div>
-                    <div>
-                      <p className="text-slate-900 text-sm font-black uppercase tracking-widest">
-                        Waiting for URL
-                      </p>
-                      <p className="text-xs opacity-50 font-medium normal-case mt-1 italic">
-                        The magic happens here...
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-slate-50 text-center">
-              <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
-                High Resolution • Print Ready
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {showUrlModal && <UrlQrModal onClose={() => setShowUrlModal(false)} />}
     </div>
   );
 }
